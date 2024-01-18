@@ -7,8 +7,10 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
-    "clean": "rm -rf .next && rm -rf node_modules && rm -rf yarn.lock",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "clean": "rm -rf .next",
+    "clean:all": "rm -rf .next && rm -rf node_modules && rm -rf yarn.lock",
+    "lint:check": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "dependencies": {
     "ethers": "^5.4.7",

@@ -1,16 +1,22 @@
 /**
+ * API endpoint: `/api/nova/balance/[address]`
  * Get balance of address on Nova domain
  */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { BigNumber, ethers } from 'ethers';
 import { PROVIDER } from '../../constants';
 
-type BalanceResponse = {
+interface BalanceResult {
+  balance?: BigNumber;
+  error?: string;
+}
+
+interface BalanceResponse {
   address: string;
   balance: string;
 };
 
-type ResponseData = {
+interface ResponseData {
   code: number;
   status: string;
   result: BalanceResponse;
@@ -21,16 +27,16 @@ type ResponseData = {
 export async function viewNovaBalanceOf(
   provider: ethers.providers.JsonRpcProvider,
   userAddress: string,
-): Promise<BigNumber> {
+): Promise<BalanceResult> {
   try {
     const balance = await provider.getBalance(userAddress);
-    return balance;
+    return {balance};
   } catch (error) {
-    throw new Error(`Error thrown during viewing balance: ${error}`);
+    return {error: `Internal Server Error: ${error}`};
   }
 }
 
-export default async function getBalance(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData | { error: string }>,
 ) {
@@ -43,11 +49,15 @@ export default async function getBalance(
   try {
     const { address } = req.query;
 
-    const balance = await viewNovaBalanceOf(PROVIDER, address as string);
+    const result = await viewNovaBalanceOf(PROVIDER, address as string);
+
+    if (result.error) {
+      return res.status(500).json({ error: result.error });
+    }
 
     const balanceResponse: BalanceResponse = {
       address: address as string,
-      balance: balance.toString(),
+      balance: result.balance.toString(),
     };
     res.status(200).json({
       code: 200,
